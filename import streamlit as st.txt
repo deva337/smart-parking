@@ -1,0 +1,113 @@
+import streamlit as st
+import pandas as pd
+import numpy as np
+import datetime
+import random
+
+# Page Configuration
+st.set_page_config(
+    page_title="Smart Traffic & Live Parking System",
+    page_icon="🚦",
+    layout="wide"
+)
+
+# App Title
+st.title("🚦 Smart Parking, Traffic Enforcement & Citizen Reporting Portal")
+st.caption("Puducherry Traffic Police & Smart City Initiative")
+st.markdown("---")
+
+# Tabs
+tab1, tab2, tab3 = st.tabs(["🅿️ Live Parking Management", "📸 Citizen Reporting System", "👮 Police Enforcement Area"])
+
+# ---------------------------------------------------------
+# TAB 1: LIVE PARKING WITH MAP & REAL-TIME SLOTS
+# ---------------------------------------------------------
+with tab1:
+    st.header("🅿️ Real-Time Smart Parking Map & Availability")
+    
+    # Quick Summary Metrics
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric(label="Beach Road Parking", value="12 / 50 Free", delta="Fast Filling")
+    col2.metric(label="JN Street Zone", value="2 / 30 Free", delta="-8 Slots", delta_color="inverse")
+    col3.metric(label="Bus Stand Multi-Level", value="45 / 100 Free", delta="+10 Free")
+    col4.metric(label="Mission Street Parking", value="0 / 20 Free", delta="FULL", delta_color="inverse")
+
+    st.markdown("---")
+
+    # Interactive Filter
+    st.subheader("📍 Interactive Parking Map (Puducherry City)")
+    vehicle_filter = st.radio("Select Vehicle Type:", ["Two Wheeler (Bike)", "Four Wheeler (Car)"], horizontal=True)
+
+    # Puducherry Live Parking GPS Coordinates
+    parking_locations = pd.DataFrame({
+        'lat': [11.9338, 11.9350, 11.9310, 11.9380],
+        'lon': [79.8350, 79.8300, 79.8250, 79.8280],
+        'Location': ['Beach Road Area', 'JN Street Zone', 'Bus Stand Parking', 'Mission Street']
+    })
+
+    # Live Map Display
+    st.map(parking_locations, zoom=13)
+
+    st.markdown("---")
+
+    # Slot Booking / Status Check Form
+    st.subheader("🎟️ Reserve / Check Parking Availability")
+    c1, c2 = st.columns(2)
+    with c1:
+        selected_spot = st.selectbox("Choose Parking Location", parking_locations['Location'])
+        duration = st.slider("Select Duration (Hours)", 1, 6, 2)
+    
+    with c2:
+        st.write(" ")
+        st.write(" ")
+        if st.button("⚡ Reserve Live Slot Now", type="primary"):
+            pass_code = f"PDY-SLOT-{random.randint(100, 999)}"
+            st.success(f"✅ Slot Reserved at *{selected_spot}* for {duration} hours!")
+            st.info(f"🎫 Your Parking Pass ID: *{pass_code}* (Show this code at entry gate)")
+
+# ---------------------------------------------------------
+# TAB 2: CITIZEN REPORTING SYSTEM
+# ---------------------------------------------------------
+with tab2:
+    st.header("📸 Report Traffic Violations (Public Portal)")
+    st.info("Citizens can report illegal parking, helmetless riding, or traffic obstruction.")
+    
+    with st.form("citizen_report_form"):
+        reporter_name = st.text_input("Your Name (Optional)", "Devakumar")
+        violation_type = st.selectbox("Violation Type", ["No Parking Zone", "Helmetless Riding", "Triple Riding", "Signal Jump", "Traffic Obstruction"])
+        location_input = st.text_input("Location / Street Name", "Goubert Avenue, Beach Road")
+        uploaded_image = st.file_uploader("Upload Proof Photo...", type=["jpg", "png", "jpeg"])
+        description = st.text_area("Additional Details")
+        
+        submit_citizen = st.form_submit_button("🚨 Submit Incident Report")
+        
+    if submit_citizen:
+        st.success("✅ Thank you! Your report has been dispatched to Puducherry Traffic Control Room.")
+        st.balloons()
+
+# ---------------------------------------------------------
+# TAB 3: POLICE ENFORCEMENT
+# ---------------------------------------------------------
+with tab3:
+    st.header("👮 Police Enforcement & Challan Dashboard")
+    st.caption("Restricted Access — Traffic Police Officials")
+    
+    col_a, col_b = st.columns(2)
+    with col_a:
+        vehicle_no = st.text_input("Enter Vehicle Registration Number", "PY-01-AB-1234")
+        offense = st.selectbox("Offense Category", ["Illegal Parking Fine (₹500)", "No Helmet Fine (₹1000)", "Signal Jump Fine (₹1000)"])
+    
+    with col_b:
+        officer_id = st.text_input("Officer ID", "TP-PDY-104")
+        st.write(" ")
+        st.write(" ")
+        if st.button("⚡ Issue Digital E-Challan", type="primary"):
+            challan_id = f"CH-{random.randint(10000, 99999)}"
+            st.error(f"⚠️ E-Challan Generated: *{challan_id}* for Vehicle *{vehicle_no}*")
+            st.json({
+                "Challan ID": challan_id,
+                "Vehicle Number": vehicle_no,
+                "Offense": offense,
+                "Issued By Officer": officer_id,
+                "Timestamp": str(datetime.datetime.now())
+            })
